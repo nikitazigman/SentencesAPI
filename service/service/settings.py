@@ -18,17 +18,30 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .dev-env file
-load_dotenv(BASE_DIR.parent.joinpath("conf/env/.dev-env"))
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG")
+DEBUG = os.environ.get("DEBUG", True)
+
+if DEBUG == "false":
+    DEBUG = False
+
+# Load .dev-env file
+env_path = (
+    BASE_DIR.parent.joinpath("conf/env/.dev-env")
+    if DEBUG
+    else BASE_DIR.joinpath("conf/env/.prod-env")
+)
+
+print(f"{env_path=}")
+if not load_dotenv(BASE_DIR.parent.joinpath(env_path)):
+    raise FileNotFoundError("cannot load env file")
+
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 ALLOWED_HOSTS = [
     os.environ.get("ALLOWED_HOSTS"),
@@ -48,9 +61,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3rd party
     "rest_framework",
-    "rest_framework.authtoken",
     "debug_toolbar",
+    "rest_framework.authtoken",
     "rest_framework_simplejwt",
+    "django_filters",
     # local apps
     "app.apps.AppConfig",
 ]
@@ -65,10 +79,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
-
-# AUTHENTICATION_BACKENDS = [
-#     'django.contrib.auth.backends.RemoteUserBackend',
-# ]
 
 ROOT_URLCONF = "service.urls"
 
@@ -150,19 +160,37 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # REST FRAMEWORK
 
+default_authenticatoin = [
+    "rest_framework_simplejwt.authentication.JWTTokenUserAuthentication",
+]
+
+default_render = [
+    "rest_framework.renderers.JSONRenderer",
+]
+
+if DEBUG:
+    default_render.extend(
+        [
+            "rest_framework.renderers.BrowsableAPIRenderer",
+        ]
+    )
+    default_authenticatoin.extend(
+        [
+            "rest_framework.authentication.SessionAuthentication",
+            "rest_framework.authentication.TokenAuthentication",
+        ]
+    )
+
 REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": default_render,
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTTokenUserAuthentication",
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend"
     ],
+    "DEFAULT_AUTHENTICATION_CLASSES": default_authenticatoin,
 }
-
-if not DEBUG:
-    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = (
-        "rest_framework.renderers.JSONRenderer",
-    )
 
 # JWT simple Authentication
 
@@ -173,7 +201,9 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
     "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
-    "AUTH_TOKEN_CLASSES": ("service.tokens.NoVerrificationAccessToken",),
+    "AUTH_TOKEN_CLASSES": (
+        "service.tokens.NoVerrificationAccessToken",
+    ),
     "TOKEN_TYPE_CLAIM": "token_type",
     "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
 }
@@ -198,3 +228,5 @@ CACHES = {
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
+
+SITE_ID = 1

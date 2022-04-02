@@ -1,2 +1,2 @@
-# django_mock_content_service
-I use it to test auth O/N part
+# django_template
+it is template which I am using for my django projects

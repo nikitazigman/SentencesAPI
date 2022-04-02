@@ -1,13 +1,9 @@
-from rest_framework import generics
+from .logic.random_view import RetrieveRandomView
+from .models import Quote
+from .serializers import QuoteSerializer
 
-from .models import Content
-from .serializers import ContentSerializer
 
-
-class ContentList(generics.ListAPIView):
-    queryset = Content.objects.all()
-    serializer_class = ContentSerializer
-
-    def get(self, request, *args, **kwargs):
-        print(f"HEY: {request.user.id=}")
-        return super().get(request, *args, **kwargs)
+class RandomQuoteView(RetrieveRandomView):
+    queryset = Quote.objects.all()
+    serializer_class = QuoteSerializer
+    filterset_fields = ["category", "author"]

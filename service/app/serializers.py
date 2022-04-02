@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
-from .models import Content
+from .models import Quote
 
 
-class ContentSerializer(serializers.ModelSerializer):
+class QuoteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Content
+        model = Quote
         fields = "__all__"

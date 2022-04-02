@@ -1,5 +1,7 @@
 from django.db import models
 
 
-class Content(models.Model):
-    content = models.CharField(max_length=200)
+class Quote(models.Model):
+    quote = models.TextField()
+    author = models.CharField(max_length=100)
+    category = models.CharField(max_length=50)

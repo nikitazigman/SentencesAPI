@@ -1,6 +1,9 @@
 from django.urls import path
-from . import views
+
+from .views import RandomQuoteView
 
 urlpatterns = [
-    path("content/", views.ContentList.as_view(), name="content"),
+    path(
+        "random_quote", RandomQuoteView.as_view(), name="random_quote"
+    ),
 ]
