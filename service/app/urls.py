@@ -4,6 +4,6 @@ from .views import RandomQuoteView
 
 urlpatterns = [
     path(
-        "random_quote", RandomQuoteView.as_view(), name="random_quote"
+        "random_quote", RandomQuoteView.as_view(), name="random-quote"
     ),
 ]
