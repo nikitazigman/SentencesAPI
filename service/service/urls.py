@@ -36,7 +36,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/", include("app.urls")),
+    path("api/sentence/", include("app.urls")),
     path(
         "redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"  # type: ignore
     ),
